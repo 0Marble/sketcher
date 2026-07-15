@@ -12,6 +12,8 @@ const EXERCISE_LABELS: Record<ExerciseType, string> = {
   parallelLines: 'Parallel Lines',
   convergingLines: 'Converging Lines',
   curvedLines: 'Curved Lines',
+  circleOnPlane: 'Circle on Plane',
+  cube: 'Cube',
 };
 
 const EXERCISE_EMOJI: Record<ExerciseType, string> = {
@@ -20,6 +22,8 @@ const EXERCISE_EMOJI: Record<ExerciseType, string> = {
   parallelLines: '═',
   convergingLines: '↗',
   curvedLines: '〰',
+  circleOnPlane: '📐',
+  cube: '🧊',
 };
 
 class App {
@@ -67,17 +71,20 @@ class App {
       'parallelLines',
       'convergingLines',
       'curvedLines',
+      'circleOnPlane',
+      'cube',
     ];
 
     for (const type of types) {
+      const stat = stats[type] ?? { count: 0, best: 0, average: 0 };
       const card = document.createElement('button');
       card.className =
         'panel flex flex-col items-start text-left transition hover:border-blue-300 hover:shadow-md';
       card.innerHTML = `
         <span class="mb-2 text-3xl">${EXERCISE_EMOJI[type]}</span>
         <span class="text-lg font-semibold">${EXERCISE_LABELS[type]}</span>
-        <span class="mt-1 text-xs text-slate-400">${stats[type].count} attempts · best ${Math.round(
-          stats[type].best
+        <span class="mt-1 text-xs text-slate-400">${stat.count} attempts · best ${Math.round(
+          stat.best
         )}</span>
       `;
       card.addEventListener('click', () => this.startExercise(type));

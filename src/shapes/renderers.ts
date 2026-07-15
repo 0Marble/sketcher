@@ -6,6 +6,8 @@ import type {
   ParallelLinesParams,
   ConvergingLinesParams,
   CurvedLinesParams,
+  CircleOnPlaneParams,
+  CubeParams,
 } from '../types';
 
 export function renderPerfectShape(
@@ -29,6 +31,12 @@ export function renderPerfectShape(
       break;
     case 'curvedLines':
       renderCurvedLine(ctx, params as CurvedLinesParams);
+      break;
+    case 'circleOnPlane':
+      renderCircleOnPlane(ctx, params as CircleOnPlaneParams);
+      break;
+    case 'cube':
+      renderCube(ctx, params as CubeParams);
       break;
   }
 }
@@ -97,4 +105,29 @@ function renderCurvedLine(
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p.end.x, p.end.y);
   }
   ctx.stroke();
+}
+
+function renderCircleOnPlane(ctx: CanvasRenderingContext2D, p: CircleOnPlaneParams): void {
+  ctx.beginPath();
+  const steps = 64;
+  for (let i = 0; i <= steps; i++) {
+    const angle = (i / steps) * Math.PI * 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const x = p.center.x + p.u.x * cos + p.v.x * sin;
+    const y = p.center.y + p.u.y * cos + p.v.y * sin;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function renderCube(ctx: CanvasRenderingContext2D, p: CubeParams): void {
+  for (const edge of p.edges) {
+    ctx.beginPath();
+    ctx.moveTo(edge.start.x, edge.start.y);
+    ctx.lineTo(edge.end.x, edge.end.y);
+    ctx.stroke();
+  }
 }

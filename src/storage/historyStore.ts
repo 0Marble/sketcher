@@ -47,6 +47,8 @@ export function getAllStats(): Record<ExerciseType, HistoryStats> {
     'parallelLines',
     'convergingLines',
     'curvedLines',
+    'circleOnPlane',
+    'cube',
   ];
   const stats = {} as Record<ExerciseType, HistoryStats>;
   for (const type of types) {

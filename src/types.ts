@@ -3,7 +3,9 @@ export type ExerciseType =
   | 'ellipse'
   | 'parallelLines'
   | 'convergingLines'
-  | 'curvedLines';
+  | 'curvedLines'
+  | 'circleOnPlane'
+  | 'cube';
 
 export interface Rect {
   x: number;
@@ -53,12 +55,29 @@ export interface CurvedLinesParams {
   control: [Point] | [Point, Point];
 }
 
+export interface CircleOnPlaneParams {
+  center: Point;
+  u: Point;
+  v: Point;
+  radius: number;
+  normalAngle: number;
+}
+
+export interface CubeParams {
+  edges: { start: Point; end: Point }[];
+  frontFaceCenter: Point;
+  upVector: Point;
+  normalVector: Point;
+}
+
 export type ExerciseParams =
   | CircleParams
   | EllipseParams
   | ParallelLinesParams
   | ConvergingLinesParams
-  | CurvedLinesParams;
+  | CurvedLinesParams
+  | CircleOnPlaneParams
+  | CubeParams;
 
 export interface ScoringFlags {
   ignoreStrokeCount: boolean;

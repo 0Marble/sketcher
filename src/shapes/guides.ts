@@ -9,6 +9,8 @@ import type {
   ParallelLinesParams,
   ConvergingLinesParams,
   CurvedLinesParams,
+  CircleOnPlaneParams,
+  CubeParams,
   Point,
 } from '../types';
 import type { SampledCurve } from '../geometry/types';
@@ -44,12 +46,24 @@ export function renderTraceGuide(
     ctx.setLineDash([6, 4]);
     renderPerfectShape(ctx, type, params, cellSize);
     ctx.restore();
+
+    // Overlay guide hints for the 3D exercises.
+    if (type === 'circleOnPlane') {
+      renderCircleOnPlaneGuide(ctx, params as CircleOnPlaneParams);
+    } else if (type === 'cube') {
+      renderCubeGuide(ctx, params as CubeParams);
+    }
     return;
   }
 
   // Draw exercise-specific background rails/limit lines first.
   if (type === 'parallelLines') {
     renderParallelLineRails(ctx, params as ParallelLinesParams, '#1e293b');
+  }
+
+  // For circle-on-plane, show the plane outline, circle-sized cross and normal.
+  if (type === 'circleOnPlane') {
+    renderCircleOnPlaneGuide(ctx, params as CircleOnPlaneParams);
   }
 
   const curves = buildTargetCurves(type, params);
@@ -164,6 +178,12 @@ export function renderPracticeGuide(
       break;
     case 'curvedLines':
       renderCurvedLineGuide(ctx, params as CurvedLinesParams);
+      break;
+    case 'circleOnPlane':
+      renderCircleOnPlaneGuide(ctx, params as CircleOnPlaneParams);
+      break;
+    case 'cube':
+      renderCubeGuide(ctx, params as CubeParams);
       break;
   }
 }
@@ -303,4 +323,102 @@ function renderCurvedLineGuide(
   for (const c of p.control) {
     drawDot(ctx, c, 4, '#cbd5e1');
   }
+}
+
+function renderCircleOnPlaneGuide(
+  ctx: CanvasRenderingContext2D,
+  p: CircleOnPlaneParams
+): void {
+  const outlineScale = 1.4;
+  const corners = [
+    { x: p.center.x + p.u.x * outlineScale + p.v.x * outlineScale, y: p.center.y + p.u.y * outlineScale + p.v.y * outlineScale },
+    { x: p.center.x - p.u.x * outlineScale + p.v.x * outlineScale, y: p.center.y - p.u.y * outlineScale + p.v.y * outlineScale },
+    { x: p.center.x - p.u.x * outlineScale - p.v.x * outlineScale, y: p.center.y - p.u.y * outlineScale - p.v.y * outlineScale },
+    { x: p.center.x + p.u.x * outlineScale - p.v.x * outlineScale, y: p.center.y + p.u.y * outlineScale - p.v.y * outlineScale },
+  ];
+
+  const uLen = Math.hypot(p.u.x, p.u.y);
+  const vLen = Math.hypot(p.v.x, p.v.y);
+  const uRadius = uLen === 0 ? { x: 0, y: 0 } : { x: p.u.x * (p.radius / uLen), y: p.u.y * (p.radius / uLen) };
+  const vRadius = vLen === 0 ? { x: 0, y: 0 } : { x: p.v.x * (p.radius / vLen), y: p.v.y * (p.radius / vLen) };
+
+  ctx.save();
+
+  // Plane outline.
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(corners[0].x, corners[0].y);
+  for (let i = 1; i < corners.length; i++) {
+    ctx.lineTo(corners[i].x, corners[i].y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  // Dashed cross sized to the circle (radius along each axis).
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(p.center.x - uRadius.x, p.center.y - uRadius.y);
+  ctx.lineTo(p.center.x + uRadius.x, p.center.y + uRadius.y);
+  ctx.moveTo(p.center.x - vRadius.x, p.center.y - vRadius.y);
+  ctx.lineTo(p.center.x + vRadius.x, p.center.y + vRadius.y);
+  ctx.stroke();
+
+  // Normal arrow.
+  const normalLen = p.radius * 0.7;
+  const n0 = p.center;
+  const n1 = {
+    x: p.center.x + Math.cos(p.normalAngle) * normalLen,
+    y: p.center.y + Math.sin(p.normalAngle) * normalLen,
+  };
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(n0.x, n0.y);
+  ctx.lineTo(n1.x, n1.y);
+  ctx.stroke();
+  drawArrowhead(ctx, n0, n1, '#3b82f6');
+
+  ctx.restore();
+}
+
+function renderCubeGuide(ctx: CanvasRenderingContext2D, p: CubeParams): void {
+  ctx.save();
+
+  // Front face center dot.
+  drawDot(ctx, p.frontFaceCenter, 4, '#94a3b8');
+
+  // Up vector.
+  const upEnd = {
+    x: p.frontFaceCenter.x + p.upVector.x,
+    y: p.frontFaceCenter.y + p.upVector.y,
+  };
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(p.frontFaceCenter.x, p.frontFaceCenter.y);
+  ctx.lineTo(upEnd.x, upEnd.y);
+  ctx.stroke();
+  drawArrowhead(ctx, p.frontFaceCenter, upEnd, '#000000');
+
+  // Normal vector.
+  const normalEnd = {
+    x: p.frontFaceCenter.x + p.normalVector.x,
+    y: p.frontFaceCenter.y + p.normalVector.y,
+  };
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(p.frontFaceCenter.x, p.frontFaceCenter.y);
+  ctx.lineTo(normalEnd.x, normalEnd.y);
+  ctx.stroke();
+  drawArrowhead(ctx, p.frontFaceCenter, normalEnd, '#3b82f6');
+
+  ctx.restore();
 }
