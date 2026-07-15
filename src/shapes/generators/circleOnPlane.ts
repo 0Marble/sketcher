@@ -15,6 +15,11 @@ function mul(p: Point, s: number): Point {
   return { x: p.x * s, y: p.y * s };
 }
 
+function normalizeAngle(angle: number): number {
+  const twoPi = Math.PI * 2;
+  return ((angle % twoPi) + twoPi) % twoPi;
+}
+
 export function generateCircleOnPlane(cellBounds: Rect): CircleOnPlaneParams {
   const minDim = Math.min(cellBounds.width, cellBounds.height);
   const margin = minDim * 0.12;
@@ -54,12 +59,17 @@ export function generateCircleOnPlane(cellBounds: Rect): CircleOnPlaneParams {
           p.y <= cellBounds.y + cellBounds.height - margin
       )
     ) {
+      // Point the normal along the more foreshortened axis so it looks like it's
+      // coming out of the tilted plane.
+      const minor = lenV <= lenU ? v : u;
+      const normalAngle = normalizeAngle(Math.atan2(minor.y, minor.x));
+
       return {
         center,
         u,
         v,
         radius,
-        normalAngle: randomRange(0, Math.PI * 2),
+        normalAngle,
       };
     }
   }

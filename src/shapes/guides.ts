@@ -337,11 +337,6 @@ function renderCircleOnPlaneGuide(
     { x: p.center.x + p.u.x * outlineScale - p.v.x * outlineScale, y: p.center.y + p.u.y * outlineScale - p.v.y * outlineScale },
   ];
 
-  const uLen = Math.hypot(p.u.x, p.u.y);
-  const vLen = Math.hypot(p.v.x, p.v.y);
-  const uRadius = uLen === 0 ? { x: 0, y: 0 } : { x: p.u.x * (p.radius / uLen), y: p.u.y * (p.radius / uLen) };
-  const vRadius = vLen === 0 ? { x: 0, y: 0 } : { x: p.v.x * (p.radius / vLen), y: p.v.y * (p.radius / vLen) };
-
   ctx.save();
 
   // Plane outline.
@@ -356,15 +351,15 @@ function renderCircleOnPlaneGuide(
   ctx.closePath();
   ctx.stroke();
 
-  // Dashed cross sized to the circle (radius along each axis).
+  // Dashed cross aligned with the projected ellipse axes and sized to the circle.
   ctx.strokeStyle = '#94a3b8';
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
-  ctx.moveTo(p.center.x - uRadius.x, p.center.y - uRadius.y);
-  ctx.lineTo(p.center.x + uRadius.x, p.center.y + uRadius.y);
-  ctx.moveTo(p.center.x - vRadius.x, p.center.y - vRadius.y);
-  ctx.lineTo(p.center.x + vRadius.x, p.center.y + vRadius.y);
+  ctx.moveTo(p.center.x - p.u.x, p.center.y - p.u.y);
+  ctx.lineTo(p.center.x + p.u.x, p.center.y + p.u.y);
+  ctx.moveTo(p.center.x - p.v.x, p.center.y - p.v.y);
+  ctx.lineTo(p.center.x + p.v.x, p.center.y + p.v.y);
   ctx.stroke();
 
   // Normal arrow.
