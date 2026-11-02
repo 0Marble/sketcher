@@ -61,8 +61,17 @@ export function generateCircleOnPlane(cellBounds: Rect): CircleOnPlaneParams {
     ) {
       // Point the normal along the more foreshortened axis so it looks like it's
       // coming out of the tilted plane.
-      const minor = lenV <= lenU ? v : u;
-      const normalAngle = normalizeAngle(Math.atan2(minor.y, minor.x));
+      const isVMinor = lenV <= lenU;
+      const major = isVMinor ? u : v;
+
+      // The normal's 2D projection is perpendicular to the major axis.
+      let normalAngle = normalizeAngle(Math.atan2(major.y, major.x) + Math.PI / 2);
+      
+      // Ensure it points 'out' of the plane using the cross product of the u/v basis.
+      const crossProduct = u.x * v.y - u.y * v.x;
+      if (crossProduct < 0) {
+        normalAngle = (normalAngle + Math.PI) % (Math.PI * 2);
+      }
 
       return {
         center,

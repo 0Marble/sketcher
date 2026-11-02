@@ -36,10 +36,11 @@ export function generateParallelLines(cellBounds: Rect): ParallelLinesParams {
     const topLength = randomRange(minDim * 0.35, minDim * 0.65);
     const height = randomRange(minDim * 0.25, minDim * 0.42);
     const alongShift = randomRange(-minDim * 0.12, minDim * 0.12);
-    const side = Math.random() < 0.5 ? -1 : 1;
 
     const dir = rotate({ x: 1, y: 0 }, angle);
-    const perp = rotate({ x: 0, y: side }, angle);
+    // The perpendicular vector is always (-y, x) for a 90-degree CCW rotation.
+    // This ensures the top line is always placed at a 90-degree offset from the guide.
+    const finalPerp = { x: -dir.y, y: dir.x };
 
     const guideCenter = { x: cx + randomRange(-10, 10), y: cy + randomRange(-10, 10) };
     const guideLine = {
@@ -47,7 +48,7 @@ export function generateParallelLines(cellBounds: Rect): ParallelLinesParams {
       end: add(guideCenter, mul(dir, guideLength / 2)),
     };
 
-    const topCenter = add(add(guideCenter, mul(perp, height)), mul(dir, alongShift));
+    const topCenter = add(add(guideCenter, mul(finalPerp, height)), mul(dir, alongShift));
     const topLine = {
       start: add(topCenter, mul(dir, -topLength / 2)),
       end: add(topCenter, mul(dir, topLength / 2)),
